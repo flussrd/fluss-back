@@ -8,6 +8,7 @@ import (
 	"github.com/flussrd/fluss-back/app/river-management/models"
 	repository "github.com/flussrd/fluss-back/app/river-management/repositories/modules"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -31,8 +32,14 @@ func (r mongoRepository) GetModule(ctx context.Context, moduleID string) (models
 
 	module := models.Module{}
 
-	err := modulesCollection.FindOne(ctx, bson.M{
-		"_id": moduleID,
+	docID, err := primitive.ObjectIDFromHex(moduleID)
+
+	if err != nil {
+		return models.Module{}, err
+	}
+
+	err = modulesCollection.FindOne(ctx, bson.M{
+		"_id": docID,
 	}).Decode(&module)
 
 	if errors.Is(err, mongo.ErrNoDocuments) {
